@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Basement Image</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+
+    body {
+      background-color: black;
+      margin: 0;
+      padding: 0;
+    }
+    /* Container for the image */
+    .image-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 20px;
+      overflow-x: auto;
+    }
+    .image-container img {
+      width: 100%;
+      max-width: 100%;
+      min-width: 2000px;
+      height: auto;
+    }
+    /* Content container now 1200px wide, but shrinks on smaller viewports */
+    .content {
+      width: 800px;
+      max-width: 100%;
+      height: 8000px;
+      margin: -40px auto;
+      background-color: transparent;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      font-size: 48px;
+      letter-spacing: -2px;
+      margin-bottom: 40px;
+      margin-top: 50px;
+    }
+    /* Box containing the "2019 - 2025" text */
+    .year-box {
+      width: 220px;
+      height: 60px;
+      background-color: #8C2005;
+      color: white;
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: -10px;
+      letter-spacing: -1px;
+    }
+    /* Updated descriptive paragraph styling */
+    .description {
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-weight: 300; /* Semi-Bold */
+      font-size: 24px;
+      color: white;
+      line-height: 1.3;
+      word-wrap: break-word;
+      margin-top: 30px;
+    }
+    .description a {
+      color: white;
+      text-decoration: underline;
+    }
+    /* Thin white separator line */
+    .divider {
+      width: 100%;
+      height: 2px;
+      background-color: white;
+      margin: 50px 0 50px 0;
+    }
+    /* Stats section left-aligned */
+    .stats {
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.8;
+    }
+    .stat {
+      margin-bottom: 20px;
+    }
+    .stat-number {
+      color: #ED4B00;
+      font-size: 64px;
+      display: block;
+      margin-bottom: -30px;
+    }
+    .stat-label {
+      font-size: 28px; /* Updated to match descriptive text */
+      font-weight: 500; /* Semi-Bold */
+      color: white;
+      display: block;
+      margin-top: -20px;
+    }
+    /* Tabs styling */
+    .tabs {
+      margin: 40px 0;
+      text-align: left;
+    }
+    .tab {
+      display: inline-block;
+      margin: 0 20px;
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-size: 24px;
+      cursor: pointer;
+      color: white;
+      border: none; /* Removed the border */
+    }
+    .tab.active {
+      background-color: transparent; /* Remove the background fill */
+    }
+    .tab:first-child {
+      margin-left: 0;
+    }
+    /* Table styling for tab content */
+    #tab-content table {
+      width: 50%;
+      margin-left: 0;
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-size: 18px;
+      font-weight: 200;
+      border-collapse: collapse;
+      color: white;
+      margin-top: 20px;
+    }
+    #tab-content td {
+      border: none;
+      padding: 0px;
+      text-align: left;
+    }
+    /* First column styling */
+    #tab-content td:nth-child(1) {
+      font-weight: 700;
+      padding: 5px 5px 5px 0px;
+    }
+    /* Second column styling */
+    #tab-content td:nth-child(2) {
+      font-weight: 600;
+      padding: 5px 5px 5px 5px;
+    }
+    /* Third column styling */
+    #tab-content td:nth-child(3) {
+      font-weight: 500;
+      padding: 5px 0px 5px 5px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="image-container">
+    <img src="basementpic.jpeg" alt="Basement Image">
+  </div>
+  <div class="content">
+    <h1>7 Years of Basement</h1>
+    <!-- Box with "2019 - 2025" text -->
+    <div class="year-box">
+      2019 - 2025
+    </div>
+
+    <!-- Descriptive paragraph -->
+    <p class="description">
+      An interview with <a href="https://www.papermag.com/tea-abashidze-basement-nyc#rebelltitem15" target="_blank">PAPER</a>. Newly installed lockers by SJEF. 
+      A <a href="https://rantsandraves.substack.com/p/theres-the-door-xander-c-gaines-clinton" target="_blank">cult-favorite Substack podcast</a> featuring Clinton’s best tips on how to do the door. Two Wire festivals culminating in the third and current iteration – 
+      a monumental 50-hour marathon stretching from Friday evening into Monday morning. As Basement turns 7 in 2025, we reflect on the things New York had – 
+      from Output to Chernobyl – while properly mourning for the recent things that New York most lost (Paragon and TBA, rest in peace). 
+      All that remains now is the music that echoes through the hallowed basement of the Manhattan Door factory every Sunday morning, carried on the backs 
+      of some of the most dutiful apostles of New York's nightlife.
+    </p>
+
+    <!-- Thin white line -->
+    <div class="divider"></div>
+
+    <!-- Stats section -->
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-number">600+</span>
+        <span class="stat-label">artists</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">369</span>
+        <span class="stat-label">club nights</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">38</span>
+        <span class="stat-label">parties</span>
+      </div>
+    </div>
+
+    <!-- Another thin white line -->
+    <div class="divider"></div>
+
+    <!-- Tabs for table selection -->
+    <div class="tabs">
+      <span class="tab active" id="tab-all" onclick="showTab('all')">All Stages</span>
+      <span class="tab" id="tab-basement" onclick="showTab('basement')">Basement</span>
+      <span class="tab" id="tab-studio" onclick="showTab('studio')">Studio</span>
+    </div>
+    
+    <!-- Tab content: Table will appear here -->
+    <div id="tab-content"></div>
+  </div>
+
+  <!-- Include SheetJS library for Excel parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    function generateTable(rowCount, fillerText, numberText) {
+      let table = '<table>';
+      for(let i = 1; i <= rowCount; i++){
+        table += '<tr>';
+        table += '<td>' + i + '</td>';
+        table += '<td>' + fillerText + '</td>';
+        table += '<td>' + numberText + '</td>';
+        table += '</tr>';
+      }
+      table += '</table>';
+      return table;
+    }
+
+    // Load the Basement data from the Excel file
+    function loadBasementData() {
+      fetch('event_data_final.xlsx')
+        .then(response => response.arrayBuffer())
+        .then(response => {
+          console.log('Response:', response); // log the response
+          return response.arrayBuffer();
+        })
+        .then(data => {
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = "basement";
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          let tableHtml = '<table>';
+          for (let i = 0; i < jsonData.length; i++) {
+            let row = jsonData[i];
+            tableHtml += '<tr>';
+            tableHtml += '<td>' + (i + 1) + '</td>'; // synthetic index column
+            tableHtml += '<td>' + (row[0] || '') + '</td>';
+            tableHtml += '<td>' + (row[1] || '') + '</td>';
+            tableHtml += '</tr>';
+          }
+          tableHtml += '</table>';
+          document.getElementById('tab-content').innerHTML = tableHtml;
+        })
+        .catch(error => {
+          console.error(error);
+          document.getElementById('tab-content').innerHTML = 'Error loading Basement data';
+        });
+    }
+
+    function showTab(tab) {
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      if(tab === 'all'){
+        const content = generateTable(30, 'RON LIKE HELL', '48');
+        document.getElementById('tab-content').innerHTML = content;
+        document.getElementById('tab-all').classList.add('active');
+      } else if(tab === 'basement'){
+        // Load data from Excel for the Basement tab
+        loadBasementData();
+        document.getElementById('tab-basement').classList.add('active');
+      } else if(tab === 'studio'){
+        const content = generateTable(10, 'MASSIMILIANO PAGLIARA', '10');
+        document.getElementById('tab-content').innerHTML = content;
+        document.getElementById('tab-studio').classList.add('active');
+      }
+    }
+
+    // Initialize default tab
+    showTab('all');
+  </script>
+</body>
+</html>
