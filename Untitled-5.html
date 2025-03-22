@@ -228,26 +228,22 @@
 
     // Load the Basement data from the Excel file
     function loadBasementData() {
-      fetch('event_data_final.xlsx')
-        .then(response => response.arrayBuffer())
-        .then(response => {
-          console.log('Response:', response); // log the response
-          return response.arrayBuffer();
-        })
-        .then(data => {
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheetName = "basement";
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      fetch('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv')
+        .then(response => response.text())
+        .then(csvText => {
+          // Parse CSV manually or with a library like PapaParse.
+          // For example, using PapaParse:
+          // const data = Papa.parse(csvText, { header: true }).data;
+          // Or process it manually:
+          const rows = csvText.split('\n').map(row => row.split(','));
           let tableHtml = '<table>';
-          for (let i = 0; i < jsonData.length; i++) {
-            let row = jsonData[i];
+          rows.forEach((row, index) => {
             tableHtml += '<tr>';
-            tableHtml += '<td>' + (i + 1) + '</td>'; // synthetic index column
+            tableHtml += '<td>' + (index + 1) + '</td>'; // synthetic index column
             tableHtml += '<td>' + (row[0] || '') + '</td>';
             tableHtml += '<td>' + (row[1] || '') + '</td>';
             tableHtml += '</tr>';
-          }
+          });
           tableHtml += '</table>';
           document.getElementById('tab-content').innerHTML = tableHtml;
         })
