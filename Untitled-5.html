@@ -5,7 +5,8 @@
   <title>Basement Image</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
-
+    
+    /* Ordering is Top Right Bottom Left */
     body {
       background-color: black;
       margin: 0;
@@ -94,6 +95,7 @@
       font-size: 64px;
       display: block;
       margin-bottom: -30px;
+      margin-top: -20px;
     }
     .stat-label {
       font-size: 28px; /* Updated to match descriptive text */
@@ -104,20 +106,27 @@
     }
     /* Tabs styling */
     .tabs {
-      margin: 40px 0;
+      margin: -20px 0px 20px 0px;
       text-align: left;
     }
     .tab {
       display: inline-block;
-      margin: 0 20px;
+      margin: 0px 20px 0px 20px;
       font-family: 'Inter', Arial, Helvetica, sans-serif;
-      font-size: 24px;
+      font-weight: 300;
+      font-size: 20px;
       cursor: pointer;
       color: white;
-      border: none; /* Removed the border */
+      border: none;
+      display: inline-block;
+      width: 100px;
+      text-align: left;
     }
     .tab.active {
-      background-color: transparent; /* Remove the background fill */
+      background-color: transparent;
+      color: #ED4B00;
+      font-weight: 500;
+      border-bottom: 1px dotted #ED4B00;
     }
     .tab:first-child {
       margin-left: 0;
@@ -127,11 +136,10 @@
       width: 50%;
       margin-left: 0;
       font-family: 'Inter', Arial, Helvetica, sans-serif;
-      font-size: 18px;
-      font-weight: 200;
       border-collapse: collapse;
       color: white;
       margin-top: 20px;
+      vertical-align: middle;
     }
     #tab-content td {
       border: none;
@@ -140,18 +148,23 @@
     }
     /* First column styling */
     #tab-content td:nth-child(1) {
-      font-weight: 700;
+      color: #BBBBBB;
+      font-weight: 300;
+      font-size: 13px;
       padding: 5px 5px 5px 0px;
     }
     /* Second column styling */
     #tab-content td:nth-child(2) {
-      font-weight: 600;
+      font-weight: 500;
+      font-size: 18px;
       padding: 5px 5px 5px 5px;
     }
     /* Third column styling */
     #tab-content td:nth-child(3) {
-      font-weight: 500;
-      padding: 5px 0px 5px 5px;
+      color: #BBBBBB;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 4px 0px 5px 5px;
     }
 
   </style>
@@ -210,38 +223,31 @@
     <div id="tab-content"></div>
   </div>
 
-  <!-- Include SheetJS library for Excel parsing -->
+  <!-- Include SheetJS library for Excel parsing if needed -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    function generateTable(rowCount, fillerText, numberText) {
-      let table = '<table>';
-      for(let i = 1; i <= rowCount; i++){
-        table += '<tr>';
-        table += '<td>' + i + '</td>';
-        table += '<td>' + fillerText + '</td>';
-        table += '<td>' + numberText + '</td>';
-        table += '</tr>';
-      }
-      table += '</table>';
-      return table;
-    }
-
-    // Load the Basement data from the Excel file
-    function loadBasementData() {
-      fetch('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv')
+    // Generic function to load CSV data from a URL and display it as a table,
+    // with an optional limit on the number of rows.
+    function loadCSVData(url, limit) {
+      fetch(url)
         .then(response => response.text())
         .then(csvText => {
-          // Parse CSV manually or with a library like PapaParse.
-          // For example, using PapaParse:
-          // const data = Papa.parse(csvText, { header: true }).data;
-          // Or process it manually:
-          const rows = csvText.split('\n').map(row => row.split(','));
+          // Split the CSV into rows, skip the header row with slice(1)
+          const rows = csvText.trim().split('\n').slice(1).map(row => row.split(','));
+          // If a limit is provided, slice the rows accordingly.
+          const limitedRows = limit ? rows.slice(0, limit) : rows;
           let tableHtml = '<table>';
-          rows.forEach((row, index) => {
+          tableHtml += '<colgroup>';
+          tableHtml += '<col style="width:10px;">';
+          tableHtml += '<col style="width:250px;">';
+          tableHtml += '<col style="width:40px;">';
+          tableHtml += '</colgroup>';
+          limitedRows.forEach((row, index) => {
             tableHtml += '<tr>';
             tableHtml += '<td>' + (index + 1) + '</td>'; // synthetic index column
-            tableHtml += '<td>' + (row[0] || '') + '</td>';
-            tableHtml += '<td>' + (row[1] || '') + '</td>';
+            row.forEach(cell => {
+              tableHtml += '<td>' + cell + '</td>';
+            });
             tableHtml += '</tr>';
           });
           tableHtml += '</table>';
@@ -249,28 +255,26 @@
         })
         .catch(error => {
           console.error(error);
-          document.getElementById('tab-content').innerHTML = 'Error loading Basement data';
+          document.getElementById('tab-content').innerHTML = 'Error loading data';
         });
     }
-
+  
     function showTab(tab) {
       // Remove active class from all tabs
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      if(tab === 'all'){
-        const content = generateTable(30, 'RON LIKE HELL', '48');
-        document.getElementById('tab-content').innerHTML = content;
+      // Set active tab and load corresponding CSV data with a specific row limit:
+      if (tab === 'all') {
         document.getElementById('tab-all').classList.add('active');
-      } else if(tab === 'basement'){
-        // Load data from Excel for the Basement tab
-        loadBasementData();
+        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv', 46);
+      } else if (tab === 'basement') {
         document.getElementById('tab-basement').classList.add('active');
-      } else if(tab === 'studio'){
-        const content = generateTable(10, 'MASSIMILIANO PAGLIARA', '10');
-        document.getElementById('tab-content').innerHTML = content;
+        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv', 41);
+      } else if (tab === 'studio') {
         document.getElementById('tab-studio').classList.add('active');
+        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv', 37);
       }
     }
-
+  
     // Initialize default tab
     showTab('all');
   </script>
