@@ -6,13 +6,11 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
     
-    /* Ordering is Top Right Bottom Left */
     body {
       background-color: black;
       margin: 0;
       padding: 0;
     }
-    /* Container for the image */
     .image-container {
       display: flex;
       justify-content: center;
@@ -26,11 +24,9 @@
       min-width: 2000px;
       height: auto;
     }
-    /* Content container now 1200px wide, but shrinks on smaller viewports */
     .content {
       width: 800px;
       max-width: 100%;
-      height: 8000px;
       margin: -40px auto;
       background-color: transparent;
       color: white;
@@ -38,20 +34,18 @@
       box-sizing: border-box;
     }
     h1 {
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-family: 'Inter', sans-serif;
       font-weight: 700;
       font-size: 48px;
       letter-spacing: -2px;
-      margin-bottom: 40px;
-      margin-top: 50px;
+      margin: 50px 0 40px;
     }
-    /* Box containing the "2019 - 2025" text */
     .year-box {
       width: 220px;
       height: 60px;
       background-color: #8C2005;
       color: white;
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      font-family: 'Inter', sans-serif;
       font-weight: 500;
       font-size: 32px;
       display: flex;
@@ -60,113 +54,104 @@
       margin-top: -10px;
       letter-spacing: -1px;
     }
-    /* Updated descriptive paragraph styling */
     .description {
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
-      font-weight: 300; /* Semi-Bold */
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
       font-size: 24px;
-      color: white;
       line-height: 1.3;
-      word-wrap: break-word;
       margin-top: 30px;
+      word-wrap: break-word;
     }
-    .description a {
-      color: white;
-      text-decoration: underline;
-    }
-    /* Thin white separator line */
+    .description a { color: white; text-decoration: underline; }
     .divider {
       width: 100%;
       height: 2px;
       background-color: white;
-      margin: 50px 0 50px 0;
+      margin: 50px 0;
     }
-    /* Stats section left-aligned */
-    .stats {
-      text-align: left;
-      font-family: 'Inter', sans-serif;
-      line-height: 1.8;
-    }
-    .stat {
-      margin-bottom: 20px;
-    }
+    .stats { text-align: left; font-family: 'Inter', sans-serif; line-height: 1.8; }
+    .stat { margin-bottom: 20px; }
     .stat-number {
       color: #ED4B00;
       font-size: 64px;
       display: block;
-      margin-bottom: -30px;
-      margin-top: -20px;
+      margin: -20px 0 -30px;
     }
     .stat-label {
-      font-size: 28px; /* Updated to match descriptive text */
-      font-weight: 500; /* Semi-Bold */
+      font-size: 28px;
+      font-weight: 500;
       color: white;
       display: block;
       margin-top: -20px;
     }
-    /* Tabs styling */
     .tabs {
-      margin: -20px 0px 20px 0px;
+      margin: -20px 0 20px;
       text-align: left;
     }
     .tab {
       display: inline-block;
-      margin: 0px 20px 0px 20px;
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      margin: 0 20px;
+      font-family: 'Inter', sans-serif;
       font-weight: 300;
       font-size: 20px;
       cursor: pointer;
       color: white;
-      border: none;
-      display: inline-block;
       width: 100px;
       text-align: left;
     }
     .tab.active {
-      background-color: transparent;
       color: #ED4B00;
       font-weight: 500;
       border-bottom: 1px dotted #ED4B00;
     }
-    .tab:first-child {
-      margin-left: 0;
+
+    /* Flex container for table + player */
+    #tab-content {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
     }
-    /* Table styling for tab content */
-    #tab-content table {
+    /* Table pane */
+    #tab-content .table-pane {
       width: 50%;
-      margin-left: 0;
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
+    }
+    #tab-content .table-pane table {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
       border-collapse: collapse;
       color: white;
-      margin-top: 20px;
-      vertical-align: middle;
     }
-    #tab-content td {
+    #tab-content .table-pane td {
       border: none;
-      padding: 0px;
-      text-align: left;
+      padding: 5px;
     }
-    /* First column styling */
-    #tab-content td:nth-child(1) {
+    #tab-content .table-pane td:nth-child(1) {
       color: #BBBBBB;
       font-weight: 300;
       font-size: 13px;
-      padding: 5px 5px 5px 0px;
+      width: 10%;
     }
-    /* Second column styling */
-    #tab-content td:nth-child(2) {
+    #tab-content .table-pane td:nth-child(2) {
       font-weight: 500;
       font-size: 18px;
-      padding: 5px 5px 5px 5px;
+      width: 60%;
     }
-    /* Third column styling */
-    #tab-content td:nth-child(3) {
+    #tab-content .table-pane td:nth-child(3) {
       color: #BBBBBB;
       font-weight: 700;
       font-size: 14px;
-      padding: 4px 0px 5px 5px;
+      width: 30%;
     }
-
+    /* Player pane */
+    #tab-content .player-pane {
+      width: 50%;
+      background: transparent;      /* make transparent */
+      min-height: 200px;
+      display: flex;
+      align-items: flex-start;      /* pin to top */
+      justify-content: center;
+      padding-top: 0;               /* no extra top padding */
+    }
   </style>
 </head>
 <body>
@@ -175,12 +160,8 @@
   </div>
   <div class="content">
     <h1>7 Years of Basement</h1>
-    <!-- Box with "2019 - 2025" text -->
-    <div class="year-box">
-      2019 - 2025
-    </div>
+    <div class="year-box">2019 - 2025</div>
 
-    <!-- Descriptive paragraph -->
     <p class="description">
       An interview with <a href="https://www.papermag.com/tea-abashidze-basement-nyc#rebelltitem15" target="_blank">PAPER</a>. Newly installed lockers by SJEF. 
       A <a href="https://rantsandraves.substack.com/p/theres-the-door-xander-c-gaines-clinton" target="_blank">cult-favorite Substack podcast</a> featuring Clinton’s best tips on how to do the door. Two Wire festivals culminating in the third and current iteration – 
@@ -190,93 +171,83 @@
       of some of the most dutiful apostles of New York's nightlife.
     </p>
 
-    <!-- Thin white line -->
     <div class="divider"></div>
-
-    <!-- Stats section -->
     <div class="stats">
-      <div class="stat">
-        <span class="stat-number">600+</span>
-        <span class="stat-label">artists</span>
-      </div>
-      <div class="stat">
-        <span class="stat-number">369</span>
-        <span class="stat-label">club nights</span>
-      </div>
-      <div class="stat">
-        <span class="stat-number">38</span>
-        <span class="stat-label">parties</span>
-      </div>
+      <div class="stat"><span class="stat-number">600+</span><span class="stat-label">artists</span></div>
+      <div class="stat"><span class="stat-number">369</span><span class="stat-label">club nights</span></div>
+      <div class="stat"><span class="stat-number">38</span><span class="stat-label">parties</span></div>
     </div>
-
-    <!-- Another thin white line -->
     <div class="divider"></div>
-
-    <!-- Tabs for table selection -->
     <div class="tabs">
       <span class="tab active" id="tab-all" onclick="showTab('all')">All Stages</span>
       <span class="tab" id="tab-basement" onclick="showTab('basement')">Basement</span>
       <span class="tab" id="tab-studio" onclick="showTab('studio')">Studio</span>
     </div>
-    
-    <!-- Tab content: Table will appear here -->
-    <div id="tab-content"></div>
+    <!-- Initial SoundCloud embed -->
+    <div id="tab-content">
+      <div class="table-pane">
+        <!-- Table will be injected here -->
+      </div>
+      <div class="player-pane">
+        <iframe 
+          width="100%" height="450" scrolling="no" frameborder="no"
+          src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/2716&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"
+          data-src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/2716&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"
+          id="item_no_2">
+        </iframe>
+      </div>
+    </div>
   </div>
 
-    <!-- Include SheetJS library for Excel parsing if needed -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script>
-      // Generic function to load CSV data from a URL and display it as a table,
-      // with an optional limit on the number of rows.
-      function loadCSVData(url, limit) {
-        fetch(url)
-          .then(response => response.text())
-          .then(csvText => {
-            // Split the CSV into rows, skip the header row with slice(1)
-            const rows = csvText.trim().split('\n').slice(1).map(row => row.split(','));
-            // If a limit is provided, slice the rows accordingly.
-            const limitedRows = limit ? rows.slice(0, limit) : rows;
-            let tableHtml = '<table>';
-            tableHtml += '<colgroup>';
-            tableHtml += '<col style="width:10px;">';
-            tableHtml += '<col style="width:250px;">';
-            tableHtml += '<col style="width:40px;">';
-            tableHtml += '</colgroup>';
-            limitedRows.forEach((row, index) => {
-              tableHtml += '<tr>';
-              tableHtml += '<td>' + (index + 1) + '</td>'; // synthetic index column
-              row.forEach(cell => {
-                tableHtml += '<td>' + cell + '</td>';
-              });
-              tableHtml += '</tr>';
-            });
-            tableHtml += '</table>';
-            document.getElementById('tab-content').innerHTML = tableHtml;
-          })
-          .catch(error => {
-            console.error(error);
-            document.getElementById('tab-content').innerHTML = 'Error loading data';
+  <script>
+    function loadCSVData(url, limit) {
+      fetch(url)
+        .then(r => r.text())
+        .then(csvText => {
+          const rows = csvText.trim().split('\n').slice(1);
+          const limited = limit ? rows.slice(0, limit) : rows;
+  
+          // build table pane
+          let tableHtml = '<table><tbody>';
+          limited.forEach((line, idx) => {
+            const cols = line.split(',');
+            const djText = cols[0] || '';
+            const count  = cols[1] || '';
+            const scUrl  = (cols[2] || '').trim();
+            tableHtml += `
+              <tr data-sc-url="${scUrl}">
+                <td>${idx + 1}</td>
+                <td>${djText}</td>
+                <td>${count}</td>
+              </tr>`;
           });
-      }
-    
-      function showTab(tab) {
-        // Remove active class from all tabs
-        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        // Set active tab and load corresponding CSV data with a specific row limit:
-        if (tab === 'all') {
-          document.getElementById('tab-all').classList.add('active');
-          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv', 46);
-        } else if (tab === 'basement') {
-          document.getElementById('tab-basement').classList.add('active');
-          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv', 41);
-        } else if (tab === 'studio') {
-          document.getElementById('tab-studio').classList.add('active');
-          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv', 37);
-        }
-      }
-    
-      // Initialize default tab
-      showTab('all');
-    </script>
+          tableHtml += '</tbody></table>';
+  
+          // inject only the table into the left pane
+          const container = document.getElementById('tab-content');
+          container.querySelector('.table-pane').innerHTML = tableHtml;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    }
+  
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+  
+      const urls = {
+        all:      'https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv',
+        basement: 'https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv',
+        studio:   'https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv'
+      };
+      const limits = { all:46, basement:41, studio:37 };
+  
+      loadCSVData(urls[tab], limits[tab]);
+    }
+  
+    // init
+    showTab('all');
+  </script>
 </body>
 </html>
