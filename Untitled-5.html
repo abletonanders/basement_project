@@ -223,60 +223,60 @@
     <div id="tab-content"></div>
   </div>
 
-  <!-- Include SheetJS library for Excel parsing if needed -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script>
-    // Generic function to load CSV data from a URL and display it as a table,
-    // with an optional limit on the number of rows.
-    function loadCSVData(url, limit) {
-      fetch(url)
-        .then(response => response.text())
-        .then(csvText => {
-          // Split the CSV into rows, skip the header row with slice(1)
-          const rows = csvText.trim().split('\n').slice(1).map(row => row.split(','));
-          // If a limit is provided, slice the rows accordingly.
-          const limitedRows = limit ? rows.slice(0, limit) : rows;
-          let tableHtml = '<table>';
-          tableHtml += '<colgroup>';
-          tableHtml += '<col style="width:10px;">';
-          tableHtml += '<col style="width:250px;">';
-          tableHtml += '<col style="width:40px;">';
-          tableHtml += '</colgroup>';
-          limitedRows.forEach((row, index) => {
-            tableHtml += '<tr>';
-            tableHtml += '<td>' + (index + 1) + '</td>'; // synthetic index column
-            row.forEach(cell => {
-              tableHtml += '<td>' + cell + '</td>';
+    <!-- Include SheetJS library for Excel parsing if needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+      // Generic function to load CSV data from a URL and display it as a table,
+      // with an optional limit on the number of rows.
+      function loadCSVData(url, limit) {
+        fetch(url)
+          .then(response => response.text())
+          .then(csvText => {
+            // Split the CSV into rows, skip the header row with slice(1)
+            const rows = csvText.trim().split('\n').slice(1).map(row => row.split(','));
+            // If a limit is provided, slice the rows accordingly.
+            const limitedRows = limit ? rows.slice(0, limit) : rows;
+            let tableHtml = '<table>';
+            tableHtml += '<colgroup>';
+            tableHtml += '<col style="width:10px;">';
+            tableHtml += '<col style="width:250px;">';
+            tableHtml += '<col style="width:40px;">';
+            tableHtml += '</colgroup>';
+            limitedRows.forEach((row, index) => {
+              tableHtml += '<tr>';
+              tableHtml += '<td>' + (index + 1) + '</td>'; // synthetic index column
+              row.forEach(cell => {
+                tableHtml += '<td>' + cell + '</td>';
+              });
+              tableHtml += '</tr>';
             });
-            tableHtml += '</tr>';
+            tableHtml += '</table>';
+            document.getElementById('tab-content').innerHTML = tableHtml;
+          })
+          .catch(error => {
+            console.error(error);
+            document.getElementById('tab-content').innerHTML = 'Error loading data';
           });
-          tableHtml += '</table>';
-          document.getElementById('tab-content').innerHTML = tableHtml;
-        })
-        .catch(error => {
-          console.error(error);
-          document.getElementById('tab-content').innerHTML = 'Error loading data';
-        });
-    }
-  
-    function showTab(tab) {
-      // Remove active class from all tabs
-      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      // Set active tab and load corresponding CSV data with a specific row limit:
-      if (tab === 'all') {
-        document.getElementById('tab-all').classList.add('active');
-        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv', 46);
-      } else if (tab === 'basement') {
-        document.getElementById('tab-basement').classList.add('active');
-        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv', 41);
-      } else if (tab === 'studio') {
-        document.getElementById('tab-studio').classList.add('active');
-        loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv', 37);
       }
-    }
-  
-    // Initialize default tab
-    showTab('all');
-  </script>
+    
+      function showTab(tab) {
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        // Set active tab and load corresponding CSV data with a specific row limit:
+        if (tab === 'all') {
+          document.getElementById('tab-all').classList.add('active');
+          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv', 46);
+        } else if (tab === 'basement') {
+          document.getElementById('tab-basement').classList.add('active');
+          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv', 41);
+        } else if (tab === 'studio') {
+          document.getElementById('tab-studio').classList.add('active');
+          loadCSVData('https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv', 37);
+        }
+      }
+    
+      // Initialize default tab
+      showTab('all');
+    </script>
 </body>
 </html>
