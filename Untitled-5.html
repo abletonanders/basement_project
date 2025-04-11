@@ -6,91 +6,28 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
     
-    body {
-      background-color: black;
-      margin: 0;
-      padding: 0;
-    }
-    .image-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding-top: 20px;
-      overflow-x: auto;
-    }
-    .image-container img {
-      width: 100%;
-      max-width: 100%;
-      min-width: 2000px;
-      height: auto;
-    }
-    .content {
-      width: 800px;
-      max-width: 100%;
-      margin: -40px auto;
-      background-color: transparent;
-      color: white;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    h1 {
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 48px;
-      letter-spacing: -2px;
-      margin: 50px 0 40px;
-    }
-    .year-box {
-      width: 220px;
-      height: 60px;
-      background-color: #8C2005;
-      color: white;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      font-size: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: -10px;
-      letter-spacing: -1px;
-    }
-    .description {
-      font-family: 'Inter', sans-serif;
-      font-weight: 300;
-      font-size: 24px;
-      line-height: 1.3;
-      margin-top: 30px;
-      word-wrap: break-word;
-    }
+    body { background-color: black; margin: 0; padding: 0; }
+    .image-container { display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; overflow-x: auto; }
+    .image-container img { width: 100%; max-width: 100%; min-width: 2000px; height: auto; }
+    .content { width: 800px; max-width: 100%; margin: -40px auto; background: transparent; color: white; padding: 20px; box-sizing: border-box; }
+    h1 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 48px; letter-spacing: -2px; margin: 50px 0 40px; }
+    .year-box { width: 220px; height: 60px; background: #8C2005; color: white; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 32px; display: flex; justify-content: center; align-items: center; margin-top: -10px; letter-spacing: -1px; }
+    .description { font-family: 'Inter', sans-serif; font-weight: 300; font-size: 24px; line-height: 1.3; margin-top: 30px; word-wrap: break-word; }
     .description a { color: white; text-decoration: underline; }
-    .divider {
-      width: 100%;
-      height: 2px;
-      background-color: white;
-      margin: 50px 0;
-    }
-    .stats { text-align: left; font-family: 'Inter', sans-serif; line-height: 1.8; }
+    .description_outro { font-family: 'Inter', sans-serif; font-weight: 200; font-size: 14px; font-style: italic; line-height: 1.3; margin-top: -35px; word-wrap: break-word; }
+    .description_outro a { color: white; text-decoration: underline; }
+    .divider { width: 100%; height: 1px; background: white; margin: 50px 0; }
+    .stats { text-align: left; font-family: 'Inter', sans-serif; line-height: 1.8; margin-top: -20px }
     .stat { margin-bottom: 20px; }
-    .stat-number {
-      color: #ED4B00;
-      font-size: 64px;
-      display: block;
-      margin: -20px 0 -30px;
-    }
-    .stat-label {
-      font-size: 28px;
-      font-weight: 500;
-      color: white;
-      display: block;
-      margin-top: -20px;
-    }
-    .tabs {
-      margin: -20px 0 20px;
-      text-align: left;
+    .stat-number { color: #ED4B00; font-size: 64px; display: block; margin: -20px 0 -30px; }
+    .stat-label { font-size: 28px; font-weight: 500; color: white; display: block; margin-top: -20px; }
+    .tabs { margin: 0px 0 20px; text-align: left; }
+    .tabs .tab:first-child {
+      margin-left: 1px;  /* or even 0 if you want no extra left spacing */
     }
     .tab {
       display: inline-block;
-      margin: 0 20px;
+      margin: 0 10px;
       font-family: 'Inter', sans-serif;
       font-weight: 300;
       font-size: 20px;
@@ -100,58 +37,34 @@
       text-align: left;
     }
     .tab.active {
-      color: #ED4B00;
-      font-weight: 500;
-      border-bottom: 1px dotted #ED4B00;
+      text-decoration: underline;
+      text-decoration-color: #ED4B00;
+      text-decoration-style: dotted;
+      text-underline-offset: 6px;  /* Increased offset for more gap */
     }
-
+    .dj-name:hover,
+    .dj-name.selected {
+      color: #BBBBBB;
+    }
     /* Flex container for table + player */
-    #tab-content {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
-    }
+    #tab-content { display: flex; gap: 20px; margin-top: 20px; }
     /* Table pane */
-    #tab-content .table-pane {
-      width: 50%;
-    }
-    #tab-content .table-pane table {
-      width: 100%;
-      font-family: 'Inter', sans-serif;
-      border-collapse: collapse;
-      color: white;
-    }
-    #tab-content .table-pane td {
-      border: none;
-      padding: 5px;
-    }
-    #tab-content .table-pane td:nth-child(1) {
-      color: #BBBBBB;
-      font-weight: 300;
-      font-size: 13px;
-      width: 10%;
-    }
-    #tab-content .table-pane td:nth-child(2) {
-      font-weight: 500;
-      font-size: 18px;
-      width: 60%;
-    }
-    #tab-content .table-pane td:nth-child(3) {
-      color: #BBBBBB;
-      font-weight: 700;
-      font-size: 14px;
-      width: 30%;
-    }
+    #tab-content .table-pane { width: 50%; }
+    #tab-content .table-pane table { width: 100%; font-family: 'Inter', sans-serif; border-collapse: collapse; color: white; }
+    #tab-content .table-pane td { border: none; padding: 5px; }
+    #tab-content .table-pane td:nth-child(1) { color: #BBBBBB; font-weight: 300; font-size: 13px; width: 8%; }
+    #tab-content .table-pane td:nth-child(2) { font-weight: 500; font-size: 18px; width: 72%; cursor: pointer; }
+    #tab-content .table-pane td:nth-child(3) { color: #BBBBBB; font-weight: 700; font-size: 14px; width: 20%; }
     /* Player pane */
-    #tab-content .player-pane {
-      width: 50%;
-      background: transparent;      /* make transparent */
-      min-height: 200px;
-      display: flex;
-      align-items: flex-start;      /* pin to top */
-      justify-content: center;
-      padding-top: 0;               /* no extra top padding */
-    }
+    #tab-content .player-pane { width: 50%; background: transparent; min-height: 200px; display: flex; align-items: flex-start; justify-content: center; padding-top: 0; }
+    #sc-player { height: 600px; }
+    /* Styles for the fixed Parties & Events section */
+    .party-header { font-family: 'Inter', sans-serif; font-weight: 300; font-size: 20px; color: white; margin: 0px 0px 0px 0px; padding: 0px 0px 20px 0px }
+    #party-content table { width: 48%; font-family: 'Inter', sans-serif; border-collapse: collapse; color: white; }
+    #party-content td { border: none; padding: 5px; }
+    #party-content td:nth-child(1) { color: #BBBBBB; font-weight: 300; font-size: 13px; width: 10%; }
+    #party-content td:nth-child(2) { font-weight: 500; font-size: 18px; width: 70%; }
+    #party-content td:nth-child(3) { color: #BBBBBB; font-weight: 700; font-size: 14px; width: 20%; }
   </style>
 </head>
 <body>
@@ -165,10 +78,9 @@
     <p class="description">
       An interview with <a href="https://www.papermag.com/tea-abashidze-basement-nyc#rebelltitem15" target="_blank">PAPER</a>. Newly installed lockers by SJEF. 
       A <a href="https://rantsandraves.substack.com/p/theres-the-door-xander-c-gaines-clinton" target="_blank">cult-favorite Substack podcast</a> featuring Clinton’s best tips on how to do the door. Two Wire festivals culminating in the third and current iteration – 
-      a monumental 50-hour marathon stretching from Friday evening into Monday morning. As Basement turns 7 in 2025, we reflect on the things New York had – 
-      from Output to Chernobyl – while properly mourning for the recent things that New York most lost (Paragon and TBA, rest in peace). 
-      All that remains now is the music that echoes through the hallowed basement of the Manhattan Door factory every Sunday morning, carried on the backs 
-      of some of the most dutiful apostles of New York's nightlife.
+      a monumental 50-hour marathon stretching from Friday evening into Monday morning. As Basement turns 7 in 2025, we reflect on the things New York once had – 
+      from Output to Chernobyl – while properly giving respect for some of New York's most recent losses (Paragon and TBA, rest in peace). 
+      All that remains now is music that echoes through Basement on Sunday morning, carried on the backs of some of the most dutiful apostles of New York's nightlife.
     </p>
 
     <div class="divider"></div>
@@ -179,24 +91,38 @@
     </div>
     <div class="divider"></div>
     <div class="tabs">
-      <span class="tab active" id="tab-all" onclick="showTab('all')">All Stages</span>
-      <span class="tab" id="tab-basement" onclick="showTab('basement')">Basement</span>
-      <span class="tab" id="tab-studio" onclick="showTab('studio')">Studio</span>
+      <span class="tab active all" id="tab-all" onclick="showTab('all')">All Stages</span>
+      <span class="tab basement" id="tab-basement" onclick="showTab('basement')">Basement</span>
+      <span class="tab studio" id="tab-studio" onclick="showTab('studio')">Studio</span>
     </div>
-    <!-- Initial SoundCloud embed -->
+
+    <!-- table + player container -->
     <div id="tab-content">
       <div class="table-pane">
         <!-- Table will be injected here -->
       </div>
       <div class="player-pane">
+        <!-- initial iframe -->
         <iframe 
           width="100%" height="450" scrolling="no" frameborder="no"
-          src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/2716&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"
-          data-src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/2716&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"
-          id="item_no_2">
+          src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/565300&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"
+          id="sc-player">
         </iframe>
       </div>
     </div>
+
+    <!-- New section for Parties & Events -->
+    <div class="divider"></div>
+    <div class="party-header">Parties &amp; Events</div>
+    <div id="party-content"></div>
+    <div class="divider"></div>
+    <p class="description_outro">
+      Data up to Dec 2021 extracted from Basement's <a href="https://ra.co/clubs/165976" target = "_blank">RA page</a>. 
+      Data from Dec 2021 onwards extracted from Basement's <a href="https://basementny.net/" target = "_blank">website</a>. 
+      Quality of data has been checked but is not assured. This project is by <a href="https://www.instagram.com/abletonanders/" target = "_blank">Anders Zhou</a> 
+      and is a close replication of the efforts by <a href="https://dashinsky.com/berghain-statistics/" target = "_blank">Artiom Dashinsky</a> for Berghain.
+
+    </p>
   </div>
 
   <script>
@@ -204,50 +130,93 @@
       fetch(url)
         .then(r => r.text())
         .then(csvText => {
-          const rows = csvText.trim().split('\n').slice(1);
+          const rows = csvText.trim().split('\n').slice(1); // skip header row
           const limited = limit ? rows.slice(0, limit) : rows;
-  
-          // build table pane
+
+          // build table for DJs
           let tableHtml = '<table><tbody>';
           limited.forEach((line, idx) => {
-            const cols = line.split(',');
-            const djText = cols[0] || '';
-            const count  = cols[1] || '';
-            const scUrl  = (cols[2] || '').trim();
+            const cols    = line.split(',');
+            const djText  = cols[0] || '';
+            const count   = cols[1] || '';
+            const scUrlID = cols[3] ? cols[3].trim() : ''; // 4th column
+
             tableHtml += `
-              <tr data-sc-url="${scUrl}">
+              <tr data-user-id="${scUrlID}">
                 <td>${idx + 1}</td>
-                <td>${djText}</td>
+                <td class="dj-name">${djText}</td>
                 <td>${count}</td>
               </tr>`;
           });
           tableHtml += '</tbody></table>';
-  
-          // inject only the table into the left pane
+
           const container = document.getElementById('tab-content');
           container.querySelector('.table-pane').innerHTML = tableHtml;
+
+          // wire up clicks on DJ names
+          container.querySelectorAll('.dj-name').forEach(td => {
+            td.addEventListener('click', () => {
+              const userId = td.parentElement.dataset.userId;
+              if (!userId) return;
+
+              // Remove "selected" from all DJ names
+              container.querySelectorAll('.dj-name').forEach(el => el.classList.remove('selected'));
+
+              // Add "selected" class to the clicked DJ name
+              td.classList.add('selected');
+
+              // Swap iframe src
+              const iframe = document.getElementById('sc-player');
+              iframe.src = 
+                `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/users/${encodeURIComponent(userId)}` +
+                `&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&visual=true`;
+            });
+          });
         })
-        .catch(err => {
-          console.error(err);
-        });
+        .catch(err => console.error(err));
     }
-  
+
+    function loadPartyData() {
+      fetch('https://raw.githubusercontent.com/abletonanders/basement_project/main/party_data.csv')
+        .then(r => r.text())
+        .then(csvText => {
+          const rowsAll = csvText.trim().split('\n');
+          const header = rowsAll[0].split(',');
+          const rows = rowsAll.slice(1, 21); // skip header row
+          
+          let tableHtml = '<table><tbody>';
+          rows.forEach((line, idx) => {
+            const cols = line.split(',');
+            tableHtml += `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>${cols[0] || ''}</td>
+                <td>${cols[1] || ''}</td>
+              </tr>`;
+          });
+          tableHtml += '</tbody></table>';
+          document.getElementById('party-content').innerHTML = tableHtml;
+        })
+        .catch(err => console.error(err));
+    }
+
     function showTab(tab) {
       document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-  
+
       const urls = {
         all:      'https://raw.githubusercontent.com/abletonanders/basement_project/main/all_data.csv',
         basement: 'https://raw.githubusercontent.com/abletonanders/basement_project/main/basement_data.csv',
         studio:   'https://raw.githubusercontent.com/abletonanders/basement_project/main/studio_data.csv'
       };
       const limits = { all:46, basement:41, studio:37 };
-  
+
       loadCSVData(urls[tab], limits[tab]);
     }
-  
-    // init
+
+    // Initialize main table and the Parties & Events table
     showTab('all');
+    loadPartyData();
   </script>
 </body>
 </html>
