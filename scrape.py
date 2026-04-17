@@ -98,6 +98,10 @@ async def get_event_detail(page, relative_url: str) -> dict | None:
                 continue
             if "event-detail__headline" in dj.get("class", []):
                 continue
+            # Skip wrapper divs — they concatenate their children's text into a smushed string.
+            # Only collect leaf divs (no div children) which hold actual DJ names.
+            if dj.find("div"):
+                continue
             text = dj.get_text(strip=True)
             if not text or text.lower() == "null":
                 continue
@@ -152,6 +156,14 @@ async def scrape(since: datetime | None, out_path: Path):
         json.dump(results, f, indent=2, ensure_ascii=False)
     progress_path.unlink(missing_ok=True)
     print(f"\nSaved {len(results)} events to {out_path}")
+
+    # Write versioned snapshot — never overwritten, permanent record of this scrape run
+    snapshot_dir = out_path.parent / "snapshots"
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    snapshot_path = snapshot_dir / f"events_web_{datetime.now().strftime('%Y%m%d')}.json"
+    import shutil
+    shutil.copy(out_path, snapshot_path)
+    print(f"Snapshot saved to {snapshot_path}")
 
 
 def main():

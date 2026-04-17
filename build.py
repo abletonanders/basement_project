@@ -209,7 +209,6 @@ def build_overlap_djs(web_rows: list[dict], ra_rows: list[dict]) -> list[dict]:
 
     rows = []
     for key in sorted(all_keys):
-        date, stage, dj = key
         in_web = key in web_keyed
         in_ra = key in ra_keyed
         source = "both" if (in_web and in_ra) else ("web_only" if in_web else "ra_only")
@@ -223,6 +222,83 @@ def build_overlap_djs(web_rows: list[dict], ra_rows: list[dict]) -> list[dict]:
             "kept": "yes",  # all unique keys are kept after dedup
         })
     return rows
+
+
+def detect_changes() -> list[dict]:
+    """
+    Compare the two most recent snapshots in raw/snapshots/ and return a list
+    of change records: ADDED, REMOVED, or MODIFIED events.
+    """
+    snapshot_dir = DEFAULT_WEB.parent / "snapshots"
+    if not snapshot_dir.exists():
+        return []
+
+    snapshots = sorted(snapshot_dir.glob("events_web_*.json"))
+    if len(snapshots) < 2:
+        return []
+
+    current_path = snapshots[-1]
+    previous_path = snapshots[-2]
+
+    def load_by_date(path):
+        events = json.loads(path.read_text(encoding="utf-8"))
+        return {e["event_detail_date"][:10]: e for e in events}
+
+    current = load_by_date(current_path)
+    previous = load_by_date(previous_path)
+
+    changes = []
+    all_dates = sorted(set(current) | set(previous))
+
+    for date in all_dates:
+        if date in current and date not in previous:
+            e = current[date]
+            djs = [d for sd in e.get("event_detail_music", []) for djs in sd.values() for d in djs]
+            changes.append({
+                "change_type": "ADDED",
+                "event_date": date,
+                "event_title": e.get("event_detail_title", ""),
+                "djs_current": ", ".join(djs),
+                "djs_previous": "",
+                "details": f"New event scraped",
+            })
+        elif date in previous and date not in current:
+            e = previous[date]
+            djs = [d for sd in e.get("event_detail_music", []) for djs in sd.values() for d in djs]
+            changes.append({
+                "change_type": "REMOVED",
+                "event_date": date,
+                "event_title": e.get("event_detail_title", ""),
+                "djs_current": "",
+                "djs_previous": ", ".join(djs),
+                "details": "Event no longer on website",
+            })
+        else:
+            curr, prev = current[date], previous[date]
+            curr_djs = sorted({d for sd in curr.get("event_detail_music", []) for djs in sd.values() for d in djs})
+            prev_djs = sorted({d for sd in prev.get("event_detail_music", []) for djs in sd.values() for d in djs})
+            curr_title = curr.get("event_detail_title", "")
+            prev_title = prev.get("event_detail_title", "")
+            if curr_djs != prev_djs or curr_title != prev_title:
+                details = []
+                if curr_title != prev_title:
+                    details.append(f"title: '{prev_title}' → '{curr_title}'")
+                added_djs = set(curr_djs) - set(prev_djs)
+                removed_djs = set(prev_djs) - set(curr_djs)
+                if added_djs:
+                    details.append(f"DJs added: {', '.join(sorted(added_djs))}")
+                if removed_djs:
+                    details.append(f"DJs removed: {', '.join(sorted(removed_djs))}")
+                changes.append({
+                    "change_type": "MODIFIED",
+                    "event_date": date,
+                    "event_title": curr_title,
+                    "djs_current": ", ".join(curr_djs),
+                    "djs_previous": ", ".join(prev_djs),
+                    "details": "; ".join(details),
+                })
+
+    return changes, current_path.name, previous_path.name
 
 
 def main():
@@ -289,6 +365,34 @@ def main():
         for title, count in party_counter.most_common():
             writer.writerow([title, count])
 
+    # dj_by_year.csv — per-DJ appearance counts broken down by year
+    years = ["2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"]
+    from collections import defaultdict as _dd
+    year_counter = _dd(lambda: _dd(int))
+    for row in deduped:
+        year_counter[row["dj"]][str(row["date"])[:4]] += 1
+    with open(DATA_DIR / "dj_by_year.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["DJ"] + years)
+        for dj, _ in all_counter.most_common():
+            writer.writerow([dj] + [year_counter[dj].get(y, 0) for y in years])
+
+    # party_by_year.csv — per-party unique night counts broken down by year
+    party_year_counter = _dd(lambda: _dd(int))
+    seen_party_nights = set()
+    for row in deduped:
+        if not row["event_title"]:
+            continue
+        key = (row["event_title"], str(row["date"])[:4], str(row["date"]))
+        if key not in seen_party_nights:
+            seen_party_nights.add(key)
+            party_year_counter[row["event_title"]][str(row["date"])[:4]] += 1
+    with open(DATA_DIR / "party_by_year.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["party"] + years)
+        for title, _ in party_counter.most_common():
+            writer.writerow([title] + [party_year_counter[title].get(y, 0) for y in years])
+
     print(f"  Wrote data/all_data.csv ({len(all_counter)} DJs)")
     print(f"  Wrote data/basement_data.csv ({len(basement_counter)} DJs)")
     print(f"  Wrote data/studio_data.csv ({len(studio_counter)} DJs)")
@@ -335,6 +439,41 @@ def main():
     print(f"  New DJs (not in dj_soundcloud.csv):  {new_dj_count}  ← add SoundCloud links for these")
     print(f"  DJ names untouched (rule=none):       {none_dj_count}  ← scan for mangled names")
     print(f"  Party titles untouched (rule=none):   {none_party_count}  ← scan for recurring parties needing a remap")
+
+    # CSV snapshots — dated copy of all output CSVs, never overwritten
+    import shutil
+    csv_snapshot_dir = DATA_DIR / "snapshots" / datetime.now().strftime("%Y%m%d")
+    csv_snapshot_dir.mkdir(parents=True, exist_ok=True)
+    csv_files = ["all_data.csv", "basement_data.csv", "studio_data.csv",
+                 "party_data.csv", "dj_by_year.csv", "dj_soundcloud.csv"]
+    for f in csv_files:
+        src = DATA_DIR / f
+        if src.exists():
+            shutil.copy(src, csv_snapshot_dir / f)
+    print(f"  CSV snapshot saved to data/snapshots/{csv_snapshot_dir.name}/")
+
+    # Change detection — compare two most recent snapshots
+    result = detect_changes()
+    if result and result != []:
+        changes, current_snap, previous_snap = result
+        if changes:
+            today = datetime.now().strftime("%Y%m%d")
+            change_path = REVIEW_DIR / f"changes_{today}.csv"
+            write_review_csv(
+                change_path,
+                changes,
+                ["change_type", "event_date", "event_title", "djs_current", "djs_previous", "details"],
+            )
+            added = sum(1 for c in changes if c["change_type"] == "ADDED")
+            removed = sum(1 for c in changes if c["change_type"] == "REMOVED")
+            modified = sum(1 for c in changes if c["change_type"] == "MODIFIED")
+            print(f"\nChange report ({previous_snap} → {current_snap}):")
+            print(f"  Added:    {added}")
+            print(f"  Removed:  {removed}")
+            print(f"  Modified: {modified}")
+            print(f"  Wrote {change_path.name}")
+        else:
+            print(f"\nNo changes detected between last two snapshots.")
 
 
 if __name__ == "__main__":

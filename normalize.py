@@ -55,9 +55,29 @@ def normalize_djs(names: list[str]) -> list[tuple[str, str, str]]:
     # Step 3: apply manual rules (expand, skip, remap)
     results = []
     for raw, candidate, rule in exploded:
-        # Drop concatenation artifacts: BasementXXXX or StudioXXXX fused strings
-        if re.match(r"^(BASEMENT|STUDIO)\S", candidate):
-            results.append((raw, None, "skip"))
+        # StudioXXXX / BasementXXXX fused strings — strip the prefix and re-queue
+        # the remainder through the same normalization pass rather than dropping it.
+        prefix_match = re.match(r"^(BASEMENT|STUDIO)(.+)$", candidate)
+        if prefix_match:
+            remainder = prefix_match.group(2).strip()
+            if remainder:
+                # Re-apply splitting on the unprefixed remainder
+                sub_names = [remainder]
+                if re.search(r"\bb2b\b", remainder, re.IGNORECASE):
+                    sub_names = [p.strip() for p in re.split(r"\bb2b\b", remainder, flags=re.IGNORECASE) if p.strip()]
+                elif " / " in remainder:
+                    sub_names = [p.strip() for p in remainder.split(" / ") if p.strip()]
+                for sub in sub_names:
+                    sub_upper = sub.upper()
+                    if sub_upper in skip_set:
+                        results.append((raw, None, "skip"))
+                    elif sub_upper in expand:
+                        for expanded in expand[sub_upper]:
+                            results.append((raw, expanded.upper(), "expand"))
+                    elif sub_upper in remaps:
+                        results.append((raw, remaps[sub_upper].upper(), "manual_remap"))
+                    else:
+                        results.append((raw, sub_upper, "studio_prefix_stripped"))
             continue
 
         # Strip trailing performance qualifiers
