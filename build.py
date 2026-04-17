@@ -235,10 +235,18 @@ def main():
     web_events_all = load_events(Path(args.web))
     ra_events = load_events(Path(args.ra))
 
-    # RA is authoritative for 2019-2021. Web is used exclusively from 2022 onward.
-    web_events = [e for e in web_events_all if e.get("event_detail_date", "")[:4] >= "2022"]
-    print(f"  Web events (2022+):     {len(web_events)}  (of {len(web_events_all)} total scraped)")
-    print(f"  RA events  (2019-2021): {len(ra_events)}")
+    # RA is authoritative for 2019-2021.
+    # Web supplements RA for 2019-2021 dates RA didn't capture, and is used exclusively from 2022+.
+    ra_dates = {e["event_detail_date"][:10] for e in ra_events}
+    web_events = [
+        e for e in web_events_all
+        if e.get("event_detail_date", "")[:4] >= "2022"
+        or e.get("event_detail_date", "")[:10] not in ra_dates
+    ]
+    web_supplement = [e for e in web_events if e.get("event_detail_date", "")[:4] < "2022"]
+    print(f"  RA events  (2019-2021):          {len(ra_events)}")
+    print(f"  Web events (2022+):              {len(web_events) - len(web_supplement)}")
+    print(f"  Web events (2019-2021 supplement): {len(web_supplement)}  (dates RA missed)")
 
     known_djs = load_soundcloud()
     soundcloud_ids = load_soundcloud_ids()
@@ -266,7 +274,9 @@ def main():
     all_counter = Counter(r["dj"] for r in deduped)
     basement_counter = Counter(r["dj"] for r in deduped if r["stage"].lower() == "basement")
     studio_counter = Counter(r["dj"] for r in deduped if r["stage"].lower() == "studio")
-    party_counter = Counter(r["event_title"] for r in deduped if r["event_title"])
+    # Count unique nights per party (not DJ appearances)
+    party_nights = {(r["event_title"], r["date"]): r["event_title"] for r in deduped if r["event_title"]}
+    party_counter = Counter(party_nights.values())
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     write_dj_csv(DATA_DIR / "all_data.csv", all_counter, soundcloud_ids)
