@@ -62,7 +62,7 @@
     #dj-chart .bar-col .year-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 13px; color: white; margin-top: 5px; }
     #dj-chart .bar-col.hoverable .bar { position: relative; }
     #dj-chart .bar-col.hoverable:hover .bar { background: #ED4B00; }
-    #dj-chart .bar-count { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.15s ease; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 12px; color: white; white-space: nowrap; pointer-events: none; }
+    #dj-chart .bar-count { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.15s ease; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; color: white; white-space: nowrap; pointer-events: none; }
     #dj-chart .bar-col.hoverable:hover .bar-count { opacity: 1; }
     #sc-player { height: 600px; flex-shrink: 0; }
     /* Styles for the fixed Parties & Events section */
@@ -81,7 +81,7 @@
     #party-chart .bar-col .year-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 13px; color: white; margin-top: 5px; }
     #party-chart .bar-col.hoverable .bar { position: relative; }
     #party-chart .bar-col.hoverable:hover .bar { background: #ED4B00; }
-    #party-chart .bar-count-p { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.15s ease; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 12px; color: white; white-space: nowrap; pointer-events: none; }
+    #party-chart .bar-count-p { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.15s ease; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 18px; color: white; white-space: nowrap; pointer-events: none; }
     #party-chart .bar-col.hoverable:hover .bar-count-p { opacity: 1; }
   </style>
 </head>
@@ -99,15 +99,15 @@
 
     <div class="divider"></div>
     <div class="stats">
-      <div class="stat"><span class="stat-number">727</span><span class="stat-label">artists</span></div>
-      <div class="stat"><span class="stat-number">485</span><span class="stat-label">club nights</span></div>
-      <div class="stat"><span class="stat-number">50</span><span class="stat-label">parties</span></div>
+      <div class="stat"><span class="stat-number count-up" data-target="727">0</span><span class="stat-label">artists</span></div>
+      <div class="stat"><span class="stat-number count-up" data-target="485">0</span><span class="stat-label">club nights</span></div>
+      <div class="stat"><span class="stat-number count-up" data-target="50">0</span><span class="stat-label">parties</span></div>
     </div>
 
     <!-- Monthly club nights line chart (avg 2022-2025) -->
     <svg id="monthly-chart" viewBox="0 0 760 132" width="100%" height="132" style="display:block;margin-top:50px;overflow:visible;">
       <!-- line -->
-      <polyline
+      <polyline id="monthly-line"
         points="30,92 93.6,50 157.3,22 220.9,22 284.5,22 348.2,22 411.8,36 475.5,92 539.1,22 602.7,36 666.4,50 730,64"
         fill="none" stroke="#ED4B00" stroke-width="2" stroke-linejoin="round"/>
       <!-- nodes + hover labels -->
@@ -129,7 +129,7 @@
       </g>
     </svg>
     <div style="margin-top:30px;">
-      <span style="font-family:'Inter',sans-serif;font-size:64px;color:#ED4B00;display:block;line-height:1;">7.4</span>
+      <span class="count-up" data-target="7.4" data-decimals="1" style="font-family:'Inter',sans-serif;font-size:64px;color:#ED4B00;display:block;line-height:1;">0.0</span>
       <span style="font-family:'Inter',sans-serif;font-size:28px;font-weight:500;color:white;display:block;margin-top:8px;">club nights per month*</span>
     </div>
 
@@ -390,13 +390,16 @@
         circle.setAttribute('r', '4');
         circle.setAttribute('fill', '#ED4B00');
         circle.style.cursor = 'default';
+        circle.style.opacity = '0';
+        circle.style.transition = 'opacity 0.4s ease-out';
+        circle.dataset.idx = i;
 
         const label = document.createElementNS('http://www.w3.org/2000/svg','text');
         label.setAttribute('x', xs[i]);
-        label.setAttribute('y', ys[i] - 9);
+        label.setAttribute('y', ys[i] - 18);
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('font-family', 'Inter, sans-serif');
-        label.setAttribute('font-size', '12');
+        label.setAttribute('font-size', '18');
         label.setAttribute('font-weight', '500');
         label.setAttribute('fill', 'white');
         label.setAttribute('opacity', '0');
@@ -423,11 +426,89 @@
       });
     })();
 
-    // Initialize main table, parties, and year chart data
+    // Initialize main table and parties immediately; defer the per-DJ and
+    // per-party year bar charts so their rise-from-bottom stagger animation
+    // fires when the user scrolls them into view instead of off-screen at load.
     showTab('all');
     loadPartyData();
-    loadDjByYear();
-    loadPartyByYear();
+
+    function loadOnFirstView(chartId, loader) {
+      const target = document.getElementById(chartId);
+      if (!target) { loader(); return; }
+      const obs = new IntersectionObserver((entries, o) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            loader();
+            o.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      obs.observe(target);
+    }
+    loadOnFirstView('dj-chart', loadDjByYear);
+    loadOnFirstView('party-chart', loadPartyByYear);
+
+    // ------------------------------------------------------------
+    // Scroll-triggered animations: stat count-up + line-chart grow
+    // Runs once when each section first enters the viewport.
+    // ------------------------------------------------------------
+
+    // 1. Stat count-up (applies to any span with class="count-up")
+    function animateCountUp(el) {
+      const target = parseFloat(el.dataset.target);
+      const decimals = parseInt(el.dataset.decimals || '0', 10);
+      const duration = 1500;
+      const start = performance.now();
+      function frame(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out-cubic
+        const v = target * eased;
+        el.textContent = v.toFixed(decimals);
+        if (t < 1) requestAnimationFrame(frame);
+        else el.textContent = target.toFixed(decimals);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    const countUpObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCountUp(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    document.querySelectorAll('.count-up').forEach(el => countUpObserver.observe(el));
+
+    // 2. Line chart grow (stroke-dashoffset trick + staggered dots)
+    (function() {
+      const line = document.getElementById('monthly-line');
+      if (!line) return;
+      // Polyfill: <polyline> getTotalLength works in all current browsers.
+      const len = line.getTotalLength();
+      line.style.strokeDasharray = len;
+      line.style.strokeDashoffset = len;
+      line.style.transition = 'stroke-dashoffset 1.8s ease-out';
+
+      const dots = document.querySelectorAll('#chart-points circle');
+
+      const chartObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          // Draw the line
+          requestAnimationFrame(() => { line.style.strokeDashoffset = '0'; });
+          // Stagger the dots so they appear as the "pen" reaches them
+          dots.forEach((dot, i) => {
+            const delay = 200 + (i / (dots.length - 1)) * 1500;
+            setTimeout(() => { dot.style.opacity = '1'; }, delay);
+          });
+          obs.unobserve(entry.target);
+        });
+      }, { threshold: 0.3 });
+
+      chartObserver.observe(document.getElementById('monthly-chart'));
+    })();
   </script>
 </body>
 </html>
