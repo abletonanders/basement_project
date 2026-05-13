@@ -8,12 +8,12 @@ A stats dashboard for BASEMENT NYC, a Bushwick techno club. Tracks DJs, recurrin
 
 | Source | Coverage | File |
 |--------|----------|------|
-| RA.co text scrape | May 2019 – Nov 2021 (pre-COVID closure) | `raw/basement_text.txt` |
-| basementny.net web scrape | May 2022 – present (post-reopening) | `raw/events_web.json` |
+| RA.co text scrape (full archive) | May 2019 – present | `raw/basement_text.txt` (original) + dated supplements `raw/YYYYMMDD_basement_text.txt` |
+| basementny.net web scrape | May 2019 – present | `raw/events_web.json` |
 
-RA is authoritative for 2019–2021. Web is used exclusively from 2022 onward, plus 4 web-only dates from late 2021 that RA didn't capture. The two sources are otherwise non-overlapping.
+Both sources cover the full run as of the May 2026 refresh. `build.py` merges them with post-normalization conflict detection — RA wins on zero-DJ-overlap conflict dates (basementny.net periodically re-points pages to the wrong event). Web is the only source of Basement-vs-Studio stage info; RA hardcodes stage = Basement.
 
-`raw/basement_text.txt` is **irreplaceable** — a manual scrape of RA pages that may no longer exist. Never overwrite it.
+`raw/basement_text.txt` is **irreplaceable** — a manual scrape of RA pages that may no longer exist. Never overwrite it. New RA scrapes go in dated supplement files (`raw/YYYYMMDD_basement_text.txt`) which can be promoted to canonical via the procedure in `REFRESH_GUIDE.md` §2a.
 
 ## Pipeline Scripts
 
@@ -85,9 +85,10 @@ RA data (2019–2021) has no stage info — all DJs hardcoded to `Basement`. The
 3. **B2B split**: `"FJAAK B2B UMFANG"` → `["FJAAK", "UMFANG"]`
 4. **Slash split**: `"DVS1 / VOLVOX"` → `["DVS1", "VOLVOX"]`
 5. **Performance suffix stripping**: ` LIVE`, ` (DJ SET)`, ` PRESENTS ...`
-6. **NE/RE/A merge**: fragments → `["NE/RE/A"]`
-7. **Uppercase**
-8. **Manual rules** from `normalize_rules.json`: `remaps`, `skip`, `expand`
+6. **RA disambiguation suffix stripping**: `"JEK (US)"` → `"JEK"`, `"MOS (NYC)"` → `"MOS"`, `"BEATRICE (DE)"` → `"BEATRICE"`. Regex: `\s*\(\s*[A-Z0-9 ]{1,5}\s*\)\s*$`. Required because RA disambiguates same-named artists by country/city tag — without this they get double-counted vs the web spelling.
+7. **NE/RE/A merge**: fragments → `["NE/RE/A"]`
+8. **Uppercase**
+9. **Manual rules** from `normalize_rules.json`: `remaps`, `skip`, `expand`
 
 ## HITL Review Workflow
 

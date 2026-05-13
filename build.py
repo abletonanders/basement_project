@@ -311,18 +311,38 @@ def main():
     web_events_all = load_events(Path(args.web))
     ra_events = load_events(Path(args.ra))
 
-    # RA is authoritative for 2019-2021.
-    # Web supplements RA for 2019-2021 dates RA didn't capture, and is used exclusively from 2022+.
-    ra_dates = {e["event_detail_date"][:10] for e in ra_events}
-    web_events = [
-        e for e in web_events_all
-        if e.get("event_detail_date", "")[:4] >= "2022"
-        or e.get("event_detail_date", "")[:10] not in ra_dates
-    ]
-    web_supplement = [e for e in web_events if e.get("event_detail_date", "")[:4] < "2022"]
-    print(f"  RA events  (2019-2021):          {len(ra_events)}")
-    print(f"  Web events (2022+):              {len(web_events) - len(web_supplement)}")
-    print(f"  Web events (2019-2021 supplement): {len(web_supplement)}  (dates RA missed)")
+    # Merge strategy:
+    #   - RA spans 2019-2026 from the resident-advisor scrape.
+    #   - Web (basementny.net) is the only source with stage info (Basement vs Studio).
+    #   - For dates in BOTH sources: include both and dedup by (date, stage, dj).
+    #     This adds DJs web missed without removing stage info RA lacks.
+    #   - Exception (conflict resolution): if the normalized DJ sets are entirely
+    #     disjoint on a shared date, basementny.net has likely re-pointed the page
+    #     to the wrong event — drop web and trust RA for that date.
+    def _normed_djs(e):
+        raw = [n for stage in e.get("event_detail_music", []) for djs in stage.values() for n in djs]
+        return {norm.upper() for _, norm, _ in normalize_djs(raw) if norm}
+
+    ra_by_date = {}
+    for e in ra_events:
+        d = e["event_detail_date"][:10]
+        ra_by_date.setdefault(d, set()).update(_normed_djs(e))
+    web_by_date = {}
+    for e in web_events_all:
+        d = e["event_detail_date"][:10]
+        web_by_date.setdefault(d, set()).update(_normed_djs(e))
+
+    conflict_dates = {
+        d for d in (set(ra_by_date) & set(web_by_date))
+        if ra_by_date[d] and web_by_date[d] and not (ra_by_date[d] & web_by_date[d])
+    }
+    web_events = [e for e in web_events_all if e["event_detail_date"][:10] not in conflict_dates]
+    ra_only_dates = set(ra_by_date) - set(web_by_date)
+
+    print(f"  RA events (2019-2026):              {len(ra_events)}")
+    print(f"  Web events (kept):                  {len(web_events)}")
+    print(f"  Conflict dates (web dropped, RA wins): {len(conflict_dates)}  {sorted(conflict_dates) if conflict_dates else ''}")
+    print(f"  RA-only dates (no web counterpart): {len(ra_only_dates)}")
 
     known_djs = load_soundcloud()
     soundcloud_ids = load_soundcloud_ids()

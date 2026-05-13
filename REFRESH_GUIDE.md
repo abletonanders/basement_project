@@ -2,7 +2,7 @@
 
 How to re-execute the full pipeline, in order, with data fidelity checks at each step.
 
-Last refreshed: April 17, 2026 (Anders Zhou). Covered May 2019 – April 2026. 449 web events scraped, 97 RA events parsed.
+Last refreshed: May 13, 2026 (Anders Zhou). Covered May 2019 – May 2026. 456 web events scraped, 479 RA events parsed (full-archive RA ingestion). 727 artists, 485 unique club nights, 50 parties.
 
 ---
 
@@ -20,7 +20,7 @@ python3 -m playwright install chromium
 ### 1. Back up existing raw data
 
 ```bash
-cd ~/Desktop/basement_project
+cd ~/Developer/club_project/basement_project
 cp raw/events_web.json raw/events_web.json.bak
 ```
 
@@ -32,7 +32,44 @@ cp raw/events_web.json raw/events_web.json.bak
 python3 parse_ra.py
 ```
 
-Fast, no network. Produces `raw/events_ra.json` (~97 events, 2019–2021). Run first to establish a stable baseline.
+Fast, no network. Produces `raw/events_ra.json` (~479 events, 2019–present). Run first to establish a stable baseline.
+
+#### 2a. Ingesting a fresh RA scrape (full-archive update)
+
+RA periodically loses or edits old event pages, so re-scraping RA every few refreshes is worth it. Workflow:
+
+1. **Paste the new RA text** into `raw/YYYYMMDD_basement_text.txt` (e.g. `raw/20260513_basement_text.txt`). **Never overwrite `raw/basement_text.txt`** — that's the irreplaceable original from before pages started disappearing.
+
+2. **Inject inferred years into bare date lines.** RA's UI drops the year for current-year events (`"Sat, 9 May"` instead of `"Sat, 9 May 2026"`), which the parser regex rejects. Run:
+   ```bash
+   python3 scripts/inject_ra_years.py raw/YYYYMMDD_basement_text.txt
+   ```
+   This writes `raw/YYYYMMDD_basement_text_normalized.txt` by walking top-to-bottom and stamping the most recent `̸<Month YYYY>` header onto each bare date.
+
+3. **Parse the normalized file** to a side-by-side JSON:
+   ```bash
+   python3 parse_ra.py --in raw/YYYYMMDD_basement_text_normalized.txt --out raw/events_ra_new.json
+   ```
+
+4. **Diff against current** before swapping:
+   ```bash
+   python3 -c "
+   import json
+   new = json.load(open('raw/events_ra_new.json'))
+   old = json.load(open('raw/events_ra.json'))
+   new_dates = {e['event_detail_date'][:10] for e in new}
+   old_dates = {e['event_detail_date'][:10] for e in old}
+   print(f'new: {len(new_dates)} dates | old: {len(old_dates)} | added: {len(new_dates - old_dates)} | dropped: {len(old_dates - new_dates)}')
+   for d in sorted(new_dates - old_dates): print(f'  ADDED  {d}')
+   for d in sorted(old_dates - new_dates): print(f'  DROPPED {d}  ← investigate')
+   "
+   ```
+
+5. **Promote if approved** — `build.py` already merges RA with web for all years (post-normalization conflict detection, see step 4 below). To swap:
+   ```bash
+   cp raw/events_ra.json raw/events_ra_legacy_$(date +%Y%m%d).json
+   mv raw/events_ra_new.json raw/events_ra.json
+   ```
 
 ### 3. Scrape basementny.net
 
@@ -44,7 +81,7 @@ Takes ~45–60 minutes (2-second delay, ~450 events expected). Produces `raw/eve
 
 Monitor progress in a second terminal:
 ```bash
-wc -l ~/Desktop/basement_project/raw/events_web.progress.jsonl
+wc -l ~/Developer/club_project/basement_project/raw/events_web.progress.jsonl
 tail -1 raw/events_web.progress.jsonl | python3 -c "import json,sys; e=json.load(sys.stdin); print(e['event_detail_date'][:10], e['event_detail_title'])"
 ```
 
@@ -73,7 +110,9 @@ python3 scrape.py --since 2024-06-01   # adjust to last recovered date
 python3 build.py
 ```
 
-Merges both sources (RA for 2019–2021, web for 2022+, plus 4 web-only supplement dates from late 2021). Outputs:
+Merge logic (in `build.py` main): both RA and web contribute for every year. Dedup is by `(date, stage, dj)`. RA hardcodes stage = Basement (no stage info in source); web is the only source of Basement-vs-Studio split. For dates where RA and web disagree completely (zero normalized-DJ overlap), the page on basementny.net is presumed wrong (likely re-pointed to a different event) and **RA wins** — web is dropped for that date. The conflict list is printed during build.
+
+Outputs:
 - `data/all_data.csv`, `basement_data.csv`, `studio_data.csv`
 - `data/party_data.csv` — unique nights per party (not DJ rows)
 - `data/dj_by_year.csv` — per-DJ counts by year (powers the bar chart)
@@ -161,8 +200,9 @@ djs = set(r['DJ'] for r in csv.DictReader(open('data/all_data.csv')))
 parties = sum(1 for _ in csv.DictReader(open('data/party_data.csv')))
 web = json.load(open('raw/events_web.json'))
 ra = json.load(open('raw/events_ra.json'))
+unique_dates = {e['event_detail_date'][:10] for e in web} | {e['event_detail_date'][:10] for e in ra}
 print(f'Artists:     {len(djs)}')
-print(f'Club nights: {len(web) + len(ra)}')
+print(f'Club nights: {len(unique_dates)}   # unique dates across both sources — DO NOT use len(web)+len(ra), that double-counts overlapping dates')
 print(f'Parties:     {parties}')
 "
 ```

@@ -84,6 +84,8 @@ def normalize_djs(names: list[str]) -> list[tuple[str, str, str]]:
         candidate = re.sub(r"\s+LIVE$", "", candidate).strip()
         candidate = re.sub(r"\s*\(DJ SET\)$", "", candidate).strip()
         candidate = re.sub(r"\s+PRESENTS\s+.*$", "", candidate).strip()
+        # Strip RA-style disambiguation suffix: "(US)", "(NYC)", "(DE)", "(3)", "(K S R)" etc.
+        candidate = re.sub(r"\s*\(\s*[A-Z0-9 ]{1,5}\s*\)\s*$", "", candidate).strip()
         if candidate in skip_set:
             results.append((raw, None, "skip"))
             continue
