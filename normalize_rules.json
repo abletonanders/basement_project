@@ -11,6 +11,7 @@
     "MALA JUNTA": "MALA JUNTA",
     "WIRE FESTIVAL": "WIRE FESTIVAL",
     "BALANCE": "BALANCE",
+    "BASSIANI": "BASSIANI",
     "BASEMENT.*ANNIVERSARY|\\d YEAR ANNIVERSARY": "BASEMENT ANNIVERSARY"
   },
   "title_remaps_web": {
@@ -27,6 +28,7 @@
     "\\btest\\b"
   ],
   "remaps": {
+    "SEDEF ADASÏ": "SEDEF ADASI",
     "ROI PEREZ ALL NIGHT LONG": "ROI PEREZ",
     "FREDDY K OPEN TO CLOSE": "FREDDY K",
     "FREDDY K PRESENTS TAKEOVER": "FREDDY K",
