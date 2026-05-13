@@ -209,6 +209,43 @@ print(f'Parties:     {parties}')
 
 Edit the three `.stat-number` spans in `output/index.html`. Also update the year badge and title if a new year has begun.
 
+#### 7b. Recompute the monthly chart and "club nights per month" hero number
+
+Both the SVG line chart and the big "7.x club nights per month" number are derived from 2022-2025 monthly averages and are **hardcoded in `output/index.html`** (no auto-recompute). They go stale every refresh. Compute the new values:
+
+```bash
+python3 -c "
+import json
+from collections import defaultdict
+web = json.load(open('raw/events_web.json'))
+ra = json.load(open('raw/events_ra.json'))
+all_dates = {e['event_detail_date'][:10] for e in web} | {e['event_detail_date'][:10] for e in ra}
+by_ym = defaultdict(list)
+for d in all_dates:
+    y, m = int(d[:4]), int(d[5:7])
+    if 2022 <= y <= 2025:
+        by_ym[m].append((y, d))
+monthly = defaultdict(set)
+for m, items in by_ym.items():
+    for y, d in items:
+        monthly[(y, m)].add(d)
+month_counts = defaultdict(list)
+for (y, m), dates in monthly.items():
+    month_counts[m].append(len(dates))
+data = [round(sum(month_counts[m])/len(month_counts[m])) for m in range(1, 13)]
+ys = [92 - 14*(v - 4) for v in data]
+xs = [30,93.6,157.3,220.9,284.5,348.2,411.8,475.5,539.1,602.7,666.4,730]
+print(f'data array:    {data}')
+print(f'ys array:      {ys}')
+print(f'polyline pts:  ' + ' '.join(f'{x},{y}' for x, y in zip(xs, ys)))
+print(f'hero number:   {sum(data)/12:.1f}')
+"
+```
+
+Then edit `output/index.html` three places: the `<polyline points=\"...\">` (line ~111), the `7.x` hero number (line ~132), and the JS `const data = [...]` + `const ys = [...]` (lines ~382, ~384) — both `points` and `ys` must match. Hover labels on the chart pull from `data`.
+
+The y-axis is fixed at 22 (top, value 9+) to 92 (bottom, value 4). If monthly averages ever exceed 9 or drop below 4, rescale the formula `y = 92 - 14*(v - 4)`.
+
 ### 8. Test locally
 
 The site fetches CSVs from GitHub raw URLs — you cannot just open `index.html` directly. Run a local server:
