@@ -155,39 +155,71 @@ Fix by editing `normalize_rules.json`, re-run `build.py`. No re-scraping needed.
 **Automated lookup does not work.** Google rate-limits immediately. DuckDuckGo rate-limits after 2 searches. Slug guessing is unreliable — returns wrong profiles for common names.
 
 **Correct process:**
-1. From `review/normalization_review.csv`, filter `is_new_dj = YES` and count ≥ 5
-2. Manually look up each DJ on SoundCloud
-3. Add the correct URL to `review/soundcloud_lookup.csv` (column 5)
-4. Run the ID scraper:
 
-```bash
-python3 -c "
-import csv, requests, time
-from bs4 import BeautifulSoup
-HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
-rows = list(csv.reader(open('review/soundcloud_lookup.csv', encoding='utf-8')))[1:]
-existing = {r['DJ']: r for r in csv.DictReader(open('data/dj_soundcloud.csv', encoding='latin-1'))}
-for row in rows:
-    dj, _, _, _, correct_url = row[0], row[1], row[2], row[3], row[4] if len(row) > 4 else ''
-    if not correct_url or correct_url in ('NO SOUNDCLOUD', 'url', ''):
-        continue
-    resp = requests.get(correct_url, headers=HEADERS, timeout=8)
-    soup = BeautifulSoup(resp.text, 'html.parser')
-    meta = soup.find('meta', {'property': 'al:ios:url'})
-    sc_id = meta['content'].split('users:')[-1].strip() if meta and 'users:' in meta['content'] else ''
-    existing[dj] = {'DJ': dj, 'Count': '', 'Soundcloud_Link': correct_url, 'Soundcloud_User_ID': sc_id}
-    print(f'{dj}: {sc_id}')
-    time.sleep(0.3)
-with open('data/dj_soundcloud.csv', 'w', newline='', encoding='utf-8') as f:
-    w = csv.DictWriter(f, fieldnames=['DJ','Count','Soundcloud_Link','Soundcloud_User_ID'])
-    w.writeheader()
-    for row in existing.values():
-        w.writerow({k: row.get(k,'') for k in ['DJ','Count','Soundcloud_Link','Soundcloud_User_ID']})
-print('Done')
-"
-```
+1. Generate a focused, dated lookup file for the refresh's new DJs (priority = total count across all years):
+   ```bash
+   python3 -c "
+   import csv
+   from datetime import date
+   new_djs = set()
+   with open('review/normalization_review.csv', encoding='utf-8') as f:
+       for r in csv.DictReader(f):
+           if r['is_new_dj'] == 'YES':
+               new_djs.add(r['normalized_name'])
+   counts = {}
+   with open('data/all_data.csv', encoding='utf-8') as f:
+       for r in csv.DictReader(f):
+           if r['DJ'] in new_djs:
+               counts[r['DJ']] = int(r['Count'])
+   rows = sorted(((c, dj) for dj, c in counts.items()), reverse=True)
+   out = f'review/soundcloud_lookup_{date.today():%Y%m%d}.csv'
+   with open(out, 'w', newline='', encoding='utf-8') as f:
+       w = csv.writer(f); w.writerow(['DJ','Count','Soundcloud_Link','Soundcloud_User_ID','Correct_URL'])
+       for c, dj in rows: w.writerow([dj, c, '', '', ''])
+   print(f'Wrote {out} with {len(rows)} DJs')
+   "
+   ```
 
-Then re-run `build.py` to pick up the new IDs.
+2. **Paste each DJ's SoundCloud URL into the `Soundcloud_Link` column (column 3)** — the column is named for this purpose and the scraper below reads it. Use `NO SOUNDCLOUD` for intentional gaps (e.g. "DJ TOOL" that turns out to be a generic placeholder). Column 5 (`Correct_URL`) is legacy from older runs; col 3 is the current convention.
+
+3. Run the ID scraper (reads col 3 first, falls back to col 5 for legacy entries):
+   ```bash
+   python3 -c "
+   import csv, requests, time, sys
+   from bs4 import BeautifulSoup
+   from pathlib import Path
+   HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
+   src = sorted(Path('review').glob('soundcloud_lookup_*.csv'))[-1]   # latest dated file
+   rows = list(csv.reader(open(src, encoding='utf-8')))[1:]
+   existing = {r['DJ']: r for r in csv.DictReader(open('data/dj_soundcloud.csv', encoding='latin-1'))}
+   for row in rows:
+       dj = row[0]
+       url = (row[2].strip() if len(row) > 2 and row[2].strip() else (row[4].strip() if len(row) > 4 else ''))
+       if not url or url.upper() in ('NO SOUNDCLOUD','URL',''):
+           continue
+       resp = requests.get(url, headers=HEADERS, timeout=10)
+       if resp.status_code != 200:
+           print(f'{dj}: HTTP {resp.status_code}'); continue
+       soup = BeautifulSoup(resp.text, 'html.parser')
+       meta = soup.find('meta', {'property': 'al:ios:url'})
+       sc_id = meta['content'].split('users:')[-1].strip() if meta and 'users:' in meta.get('content','') else ''
+       if not sc_id:
+           print(f'{dj}: no users: meta'); continue
+       canonical = f'https://soundcloud.com/users/{sc_id}'
+       existing[dj] = {'DJ': dj, 'Count': '', 'Soundcloud_Link': canonical, 'Soundcloud_User_ID': sc_id}
+       print(f'{dj}: {sc_id}')
+       time.sleep(0.4)
+   with open('data/dj_soundcloud.csv', 'w', newline='', encoding='utf-8') as f:
+       w = csv.DictWriter(f, fieldnames=['DJ','Count','Soundcloud_Link','Soundcloud_User_ID'])
+       w.writeheader()
+       for r in existing.values():
+           w.writerow({k: r.get(k,'') for k in ['DJ','Count','Soundcloud_Link','Soundcloud_User_ID']})
+   "
+   ```
+
+4. Re-run `build.py` to pick up the new IDs.
+
+**Disambiguation handles to double-check before scraping:** when a SoundCloud handle ends in `-1` / `-2` (e.g. `yazzus-1`), or doesn't match the artist's name slug (e.g. NENE H → `nenetreat`), confirm it's the right account — those suffixes mean SoundCloud assigned a numeric suffix because the canonical handle was taken by someone else.
 
 ### 7. Update hardcoded stats in index.html
 
@@ -207,7 +239,15 @@ print(f'Parties:     {parties}')
 "
 ```
 
-Edit the three `.stat-number` spans in `output/index.html`. Also update the year badge and title if a new year has begun.
+Edit the three `.stat-number` spans in `output/index.html`. **Update the `data-target` attribute on each AND the visible text** — `data-target` is the value the scroll-triggered count-up animation ramps to; the visible text is only shown briefly before JS runs. Mismatching them is the most common bug (animation counts to a different number than what shows after).
+
+```html
+<span class="stat-number count-up" data-target="727">0</span>
+…
+<span class="count-up" data-target="7.4" data-decimals="1" …>0.0</span>
+```
+
+Also update the year badge and title if a new year has begun.
 
 #### 7b. Recompute the monthly chart and "club nights per month" hero number
 
@@ -248,10 +288,11 @@ The y-axis is fixed at 22 (top, value 9+) to 92 (bottom, value 4). If monthly av
 
 ### 8. Test locally
 
-The site fetches CSVs from GitHub raw URLs — you cannot just open `index.html` directly. Run a local server:
+The site fetches CSVs from GitHub raw URLs — you cannot just open `index.html` directly. Run a local server in a separate terminal tab (it stays running until Ctrl+C):
 
 ```bash
-python3 -m http.server 8001   # from project root
+cd ~/Developer/club_project/basement_project
+python3 -m http.server 8001
 ```
 
 Generate the patched test file:

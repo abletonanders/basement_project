@@ -4,6 +4,16 @@
 
 A stats dashboard for BASEMENT NYC, a Bushwick techno club. Tracks DJs, recurring party nights, and stages across the club's full run (May 2019 – present). Live at basementstats.com (Netlify) and abletonanders.github.io/basement_project (GitHub Pages).
 
+## Current State (pickup hints)
+
+- **Last refresh: 2026-05-13** — full-archive RA ingestion + web rescrape, deployed and live.
+- **Stats on site:** 727 artists / 485 unique club nights / 50 parties / 7.4 nights per month (2022–2025 mean).
+- **Coverage:** May 2019 – May 2026.
+- **Next refresh:** incremental — `python3 scrape.py --since 2026-05-13 && python3 build.py`, then steps 5–9 of `REFRESH_GUIDE.md`. Full rescrape (~45 min) is also fine.
+- **Uncommitted right now:** `REFRESH_GUIDE.md` has real operational improvements from the May 13 refresh (SoundCloud lookup hardening, count-up animation `data-target` gotcha, local-server `cd` reminder). Inspect with `git diff REFRESH_GUIDE.md` and commit before doing more work — they're the runbook, not noise.
+- **Working-tree noise to ignore in `git status`:** `.DS_Store`, `basement_local_test.html` (regenerable per §8), `raw/*.bak`, `raw/*_20260513.log`, `Basement_Project.ipynb` (kernel/output state churn only — notebook is reference-only, do not commit). The `review/` dir is gitignored.
+- **Last 5 commits (ground truth for what shipped):** `1a5d8b3` scroll animations + larger hover labels · `9e67b5f` monthly chart hero refresh 7.3 → 7.4 · `096c2e9` full-archive RA ingest + merge logic + docs overhaul · `0d00e34` SoundCloud IDs for 23 new artists · `1d779d7` SEDEF ADASI remap + BASSIANI party rule.
+
 ## Data Sources
 
 | Source | Coverage | File |
@@ -25,9 +35,9 @@ python3 scrape.py              # scrape basementny.net → raw/events_web.json  
 python3 build.py               # merge + aggregate → data/*.csv + review/*.csv
 ```
 
-For incremental updates (next year refresh):
+For incremental updates (next refresh):
 ```bash
-python3 scrape.py --since 2026-04-17   # adjust to last known scraped date
+python3 scrape.py --since 2026-05-13   # adjust to last known scraped date
 python3 build.py
 ```
 
