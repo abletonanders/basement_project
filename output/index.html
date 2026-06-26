@@ -7,7 +7,7 @@
     
     body { background-color: black; margin: 0; padding: 0; }
     .image-container { display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; overflow-x: auto; }
-    .image-container img { width: 100%; max-width: 100%; min-width: 2000px; height: auto; }
+    .image-container img { width: 100%; max-width: 100%; min-width: 2000px; height: auto; aspect-ratio: 4096 / 2731; }
     .content { width: 800px; max-width: 100%; margin: -40px auto; background: transparent; color: white; padding: 20px; box-sizing: border-box; }
     h1 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 48px; letter-spacing: -2px; margin: 50px 0 40px; }
     .year-box { width: 220px; height: 60px; background: #8C2005; color: white; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 32px; display: flex; justify-content: center; align-items: center; margin-top: -10px; letter-spacing: -1px; }
@@ -87,7 +87,7 @@
 </head>
 <body>
   <div class="image-container">
-    <img src="basementpic.jpeg" alt="Basement Image">
+    <img src="basementpic.jpeg" alt="Basement Image" width="4096" height="2731">
   </div>
   <div class="content">
     <h1>7 Years of Basement</h1>
@@ -179,6 +179,15 @@
   </div>
 
   <script>
+    // Prevent the load-time scroll jump + premature stat animations: always
+    // start at the top, and don't let the browser restore a prior scroll
+    // position onto a page whose layout hasn't settled yet. Paired with the
+    // hero image's reserved aspect-ratio (no layout shift), this keeps the
+    // stat/chart IntersectionObservers from firing while off-screen.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    window.addEventListener('load', () => window.scrollTo(0, 0));
+
     const DJ_YEARS = ['2019','2020','2021','2022','2023','2024','2025','2026'];
     const PARTY_CHART_MAX = 12;
     const PARTY_CHART_BAR_PX = 168;
